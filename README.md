@@ -1,4 +1,9 @@
 # AI-Shopping-auto
+
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
+![Alipay](https://img.shields.io/badge/Alipay-AI%20Pay-blueviolet)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)
+
 Playwright MCP + 支付宝 AI 付 全链路方案 无需codex/cc，AI 自己逛淘宝、选商品、下单、提交付款，人只需按指纹确认
 
 
