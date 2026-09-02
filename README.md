@@ -100,13 +100,27 @@ AI 搜索商品 → 打开淘宝商品页 → 选规格 → 下单 → 截获收
 
 ### 1. 启动 Playwright MCP
 
+Windows：
 ```bash
-npx @playwright/mcp@latest --port 8931 --host <局域网IP> --browser msedge
+set PLAYWRIGHT_MCP_PING_TIMEOUT_MS=1800000 && npx @playwright/mcp@latest --port 8931 --host <局域网IP> --browser msedge
+```
+
+macOS / Linux：
+```bash
+PLAYWRIGHT_MCP_PING_TIMEOUT_MS=1800000 npx @playwright/mcp@latest --port 8931 --host <局域网IP> --browser msedge
 ```
 
 在你的 AI 客户端 MCP 设置里添加连接：`http://<IP>:8931`
 
 > IP 用 `ipconfig`（Windows）或 `ifconfig`（Mac/Linux）查看。手机热点下通常是 `192.168.43.x`。
+
+### ⚠️ 关于 PLAYWRIGHT_MCP_PING_TIMEOUT_MS
+
+Playwright MCP 的 HTTP 模式默认心跳超时只有 **5 秒**。AI 思考稍微久一点就会超时，服务端判定连接已死并杀掉 session，导致浏览器上下文全部丢失（报错 `Session not found`）。这是 [GitHub issue #982](https://github.com/microsoft/playwright-mcp/issues/982) 和 [#1293](https://github.com/microsoft/playwright-mcp/issues/1293) 里被大量用户吐槽的问题。
+
+上面的命令将超时设为 30 分钟（1800000 毫秒）。30 分钟内没有任何操作才会自动断开——既避免了频繁断连，也能在无人操作时自动关闭 session 作为安全措施。
+
+设为 `0` 可完全关闭心跳检测（不推荐用于公网暴露的场景）。
 
 ### 2. 安装并开通 alipay-bot
 
