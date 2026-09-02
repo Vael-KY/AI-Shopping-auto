@@ -201,14 +201,26 @@ node bridge.js
 
 点击「立即支付」后页面先跳到 `trust_login.do`，这个 URL 没有 orderId，提交给 alipay-bot 会报错。必须等它自动跳到 `cashiermain.htm?orderId=xxx`（通常 2-3 秒），这个才是正确的收银台 URL。
 
-### ⚠️ 页面点击的坑
-
-电商和支付页面上的按钮，不要用 JS 直接改 DOM（`element.click()` / `element.value = 'xxx'`）。支付相关页面会检查事件的 `isTrusted` 标记，只认操作系统层面真实触发的鼠标和键盘事件。
-
-Playwright 的 `page.click()` 是模拟真实鼠标点击（`isTrusted: true`），所以可以正常工作。但如果你用 `evaluate()` 在页面里执行 JS 来点按钮，支付页面会忽略这个点击。
-
-简单说：**用 Playwright 的 click，不要用 JS 的 click。**
-
+ ### ⚠️ 页面点击的坑
+ 
+ **淘宝商品页推荐用 `evaluate()` 而非 `page.click()`**
+ 
+ 实测经验：淘宝商品页是 SPA，SKU 按钮的选择器动态生成，Playwright 的 `page.click()` 经常定位不到。反而 `evaluate()` 通过文本匹配找元素再点击更稳定：
+ 
+> ```javascript
+> await page.evaluate(() => {
+>   const buttons = Array.from(document.querySelectorAll('*'));
+>   const target = buttons.find(el => 
+>     el.textContent?.trim() === '你要点的文字' && el.tagName !== 'BODY'
+>   );
+>   if (target) target.click();
+> });
+> ```
+> 
+> **商品页用 evaluate 完全没问题**，实测操作 2 小时+ 零风控。
+ 
+ ⚠️ 但需要注意：**支付页面**（收银台等）会检查事件的 `isTrusted` 标记，JS 合成的点击会被忽略。本方案通过截获收银台 URL 走桥接提交 alipay-bot，绕过了在支付页面上点击的问题。
+ 
 ## 关于云服务器部署
 
 理论上整套方案可以跑在云服务器上：
