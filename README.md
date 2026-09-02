@@ -289,7 +289,7 @@ npx @playwright/mcp@latest --port 8931 --host 0.0.0.0 --headless
 
 1. 淘宝登录态几分钟无操作会过期——可用 `--user-data-dir ./browser-data` 持久化
 2. alipay-bot 在 Windows 下返回中文可能乱码（GBK/UTF-8），不影响功能
-3. Playwright 会话断开后需重新启动
+3. Playwright 默认心跳超时仅 5 秒，极易断连——已通过 `PLAYWRIGHT_MCP_PING_TIMEOUT_MS` 解决（见上方启动命令）
 4. 首次使用需在 Playwright 浏览器中手动登录淘宝一次
 
 ## FAQ
