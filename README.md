@@ -100,9 +100,14 @@ AI 搜索商品 → 打开淘宝商品页 → 选规格 → 下单 → 截获收
 
 ### 1. 启动 Playwright MCP
 
-Windows：
+Windows（CMD）：
 ```bash
 set PLAYWRIGHT_MCP_PING_TIMEOUT_MS=1800000 && npx @playwright/mcp@latest --port 8931 --host <局域网IP> --browser msedge
+```
+
+Windows（PowerShell）：
+```powershell
+$env:PLAYWRIGHT_MCP_PING_TIMEOUT_MS="1800000"; npx @playwright/mcp@latest --port 8931 --host <局域网IP> --browser msedge
 ```
 
 macOS / Linux：
