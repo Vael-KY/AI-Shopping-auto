@@ -84,6 +84,18 @@ AI 搜索商品 → 打开淘宝商品页 → 选规格 → 下单 → 截获收
 - Node.js 18+
 - 一个支持 MCP 协议的 AI 客户端
 
+### 🔔 强烈建议使用 Edge 浏览器
+
+启动 Playwright MCP 时使用 `--browser msedge`，调用系统自带的 Microsoft Edge，而非默认的 Chromium。
+
+**为什么？**
+
+裸装的 Chromium 没有历史浏览记录、没有登录态、没有 cookie，在电商平台的风控眼里和自动化脚本没有区别。而你日常使用的 Edge 已经有完整的浏览指纹，淘宝会把它当成「你本人在逛」。
+
+实测：使用 Edge + 国内 IP + headed 模式（非 headless），连续操作淘宝超过 2 小时（搜索、选商品、下单、支付），全程未触发任何风控验证。
+
+> Windows 系统自带 Edge；macOS 需要先安装 [Microsoft Edge](https://www.microsoft.com/edge)，安装后 `--browser msedge` 同样可用。
+
 ## 步骤
 
 ### 1. 启动 Playwright MCP
