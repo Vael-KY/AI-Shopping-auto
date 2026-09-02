@@ -201,6 +201,14 @@ node bridge.js
 
 点击「立即支付」后页面先跳到 `trust_login.do`，这个 URL 没有 orderId，提交给 alipay-bot 会报错。必须等它自动跳到 `cashiermain.htm?orderId=xxx`（通常 2-3 秒），这个才是正确的收银台 URL。
 
+### ⚠️ 页面点击的坑
+
+电商和支付页面上的按钮，不要用 JS 直接改 DOM（`element.click()` / `element.value = 'xxx'`）。支付相关页面会检查事件的 `isTrusted` 标记，只认操作系统层面真实触发的鼠标和键盘事件。
+
+Playwright 的 `page.click()` 是模拟真实鼠标点击（`isTrusted: true`），所以可以正常工作。但如果你用 `evaluate()` 在页面里执行 JS 来点按钮，支付页面会忽略这个点击。
+
+简单说：**用 Playwright 的 click，不要用 JS 的 click。**
+
 ## 关于云服务器部署
 
 理论上整套方案可以跑在云服务器上：
