@@ -4,12 +4,12 @@
 ![Alipay](https://img.shields.io/badge/Alipay-AI%20Pay-blueviolet)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen)
 
-Playwright MCP + 支付宝 AI 付 全链路方案 无需codex/cc，AI 自己逛淘宝、选商品、下单、提交付款，人只需按指纹确认
+Playwright MCP + 支付宝 AI 付 全链路方案 无需codex/cc，AI 自己逛某宝、选商品、下单、提交付款，人只需按指纹确认
 
 
 > 你已经有 API，已经在跟 AI 聊天了。你只是没有 Codex / Claude Code。
 >
-> 这份文档告诉你怎么用免费工具跑通同样的事：AI 自己逛淘宝、选商品、下单、提交付款，你按一下指纹就行。✧₍^˶- ˕ -˵^₎✧
+> 这份文档告诉你怎么用免费工具跑通同样的事：AI 自己逛某宝、选商品、下单、提交付款，你按一下指纹就行。✧₍^˶- ˕ -˵^₎✧
 
 ## 背景
 
@@ -22,7 +22,7 @@ Playwright MCP + 支付宝 AI 付 全链路方案 无需codex/cc，AI 自己逛�
 ## 它做了什么
 
 ```
-AI 搜索商品 → 打开淘宝商品页 → 选规格 → 下单 → 截获收银台 URL → 提交 AI 付 → 你的手机弹出支付宝 → 按指纹
+AI 搜索商品 → 打开某宝商品页 → 选规格 → 下单 → 截获收银台 URL → 提交 AI 付 → 你的手机弹出支付宝 → 按指纹
 ```
 
 ## 核心思路
@@ -90,9 +90,9 @@ AI 搜索商品 → 打开淘宝商品页 → 选规格 → 下单 → 截获收
 
 **为什么？**
 
-裸装的 Chromium 没有历史浏览记录、没有登录态、没有 cookie，在电商平台的风控眼里和自动化脚本没有区别。而你日常使用的 Edge 已经有完整的浏览指纹，淘宝会把它当成「你本人在逛」。
+裸装的 Chromium 没有历史浏览记录、没有登录态、没有 cookie，在电商平台的风控眼里和自动化脚本没有区别。而你日常使用的 Edge 已经有完整的浏览指纹，某宝会把它当成「你本人在逛」。
 
-实测：使用 Edge + 国内 IP + headed 模式（非 headless），连续操作淘宝超过 2 小时（搜索、选商品、下单、支付），全程未触发任何风控验证。
+实测：使用 Edge + 国内 IP + headed 模式（非 headless），连续操作某宝平台超过 2 小时（搜索、选商品、下单、支付），全程未触发任何风控验证。
 
 > Windows 系统自带 Edge；macOS 需要先安装 [Microsoft Edge](https://www.microsoft.com/edge)，安装后 `--browser msedge` 同样可用。
 
@@ -197,14 +197,14 @@ node bridge.js
 
 ### 4. 让 AI 买东西
 
-告诉你的 AI 去逛淘宝、选商品、下单。AI 通过 Playwright 操作浏览器完成全部流程。
+告诉你的 AI 去逛某宝、选商品、下单。AI 通过 Playwright 操作浏览器完成全部流程。（搜索商品可使用某宝联盟相关api封装为mcp方便调用）
 
 ## AI 侧的操作流程
 
 给你的 AI 看的执行步骤：
 
 ```
-1. 通过浏览器打开淘宝商品页
+1. 通过浏览器打开某宝商品页
 2. 选择 SKU，点击「立即购买」
 3. 在确认订单页点击「立即支付」
 4. 等待 2-3 秒，页面会经历跳转：
@@ -222,9 +222,9 @@ node bridge.js
 
  ### ⚠️ 页面点击的坑
  
- **淘宝商品页推荐用 `evaluate()` 而非 `page.click()`**
+ **平台商品页推荐用 `evaluate()` 而非 `page.click()`**
  
- 实测经验：淘宝商品页是 SPA，SKU 按钮的选择器动态生成，Playwright 的 `page.click()` 经常定位不到。反而 `evaluate()` 通过文本匹配找元素再点击更稳定：
+ 实测经验：某宝商品页是 SPA，SKU 按钮的选择器动态生成，Playwright 的 `page.click()` 经常定位不到。反而 `evaluate()` 通过文本匹配找元素再点击更稳定：
  
 > ```javascript
 > await page.evaluate(() => {
@@ -250,7 +250,7 @@ node bridge.js
 需要注意：
 - 内存至少 4G（Chromium headless ~500MB + 其他服务）
 - 淘宝在 headless 浏览器下可能触发风控验证，需实测
-- 首次登录淘宝仍需扫码，可先在本地用 `--user-data-dir` 登录好再同步到服务器
+- 首次登录某宝仍需扫码，可先在本地用 `--user-data-dir` 登录好再同步到服务器
 
 ```bash
 # 云服务器启动（headless 模式）
@@ -266,7 +266,7 @@ npx @playwright/mcp@latest --port 8931 --host 0.0.0.0 --headless
 | 本地 + Edge + headed | 真实 Edge，有完整指纹和登录态 | 国内家庭/热点 IP | ✅ 极低（等同于你自己在逛） |
 | 本地 + Chromium + headed | 裸装 Chromium，无历史指纹 | 国内 IP | ⚠️ 中等（首次可能触发验证） |
 | 云服务器 + headless | 无头 Chromium，无 GUI | 数据中心 IP | ❌ 高（电商风控重点关注对象） |
-| 海外服务器 + headless | 无头 Chromium | 海外 IP | ❌ 极高（淘宝可能直接拦截） |
+| 海外服务器 + headless | 无头 Chromium | 海外 IP | ❌ 极高（平台很可能直接拦截） |
 
 **本方案推荐在本地电脑使用 Edge + headed 模式运行。** 这是风控最低、体验最好的方式。
 
@@ -292,10 +292,10 @@ npx @playwright/mcp@latest --port 8931 --host 0.0.0.0 --headless
 
 ## 已知限制
 
-1. 淘宝登录态几分钟无操作会过期——可用 `--user-data-dir ./browser-data` 持久化
+1. 某宝登录态几分钟无操作会过期——可用 `--user-data-dir ./browser-data` 持久化
 2. alipay-bot 在 Windows 下返回中文可能乱码（GBK/UTF-8），不影响功能
 3. Playwright 默认心跳超时仅 5 秒，极易断连——已通过 `PLAYWRIGHT_MCP_PING_TIMEOUT_MS` 解决（见上方启动命令）
-4. 首次使用需在 Playwright 浏览器中手动登录淘宝一次
+4. 首次使用需在 Playwright 浏览器中手动登录某宝一次
 
 ## FAQ
 
