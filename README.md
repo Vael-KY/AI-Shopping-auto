@@ -411,6 +411,8 @@ A: 任何支持 MCP 协议的客户端。Playwright MCP 是标准 MCP Server。
 
 本文档及方案禁止未经授权、未署名的二次传播。
 
+**参考或二改本项目并发布于公共平台时，请标注原项目链接并注明原作者。尊重上游是开源社区的基本礼仪。**
+
 ## 参考与引用
 
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp) — 微软官方，Apache 2.0
