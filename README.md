@@ -417,4 +417,5 @@ A: 任何支持 MCP 协议的客户端。Playwright MCP 是标准 MCP Server。
 
 - [Playwright MCP](https://github.com/microsoft/playwright-mcp) — 微软官方，Apache 2.0
 - [alipay-bot / payment-skills](https://github.com/alipay/payment-skills) — 支付宝官方，Apache 2.0
+- [ZeroTier](https://github.com/zerotier/ZeroTierOne) — 开源 P2P 组网，BSL 1.1
 - 收银台 URL 截获思路参考 Cove 支付宝 AI 付接入文档
