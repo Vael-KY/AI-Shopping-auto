@@ -348,6 +348,7 @@ npx @playwright/mcp@latest --port 8931 --host 0.0.0.0 --headless
 | 层面 | 措施 |
 |------|------|
 | 网络 | 手机热点 = 私有局域网，外部不可达 |
+| 网络（远程） | ZeroTier P2P 端到端加密（Curve25519 + Salsa20/12），设备级隔离，Private 模式需手动授权 |
 | 命令 | 桥接白名单，只允许 5 个 alipay-bot 子命令 |
 | 参数 | bridge.js 校验 URL 域名 + 拦截注入字符 |
 | 支付 | 每笔交易需用户在支付宝 App 亲手确认（指纹/面容） |
