@@ -190,7 +190,7 @@ PLAYWRIGHT_MCP_PING_TIMEOUT_MS=1800000 npx @playwright/mcp@latest --port 8931 --
 
 在你的 AI 客户端 MCP 设置里添加连接：`http://<IP>:8931`
 
-> IP 用 `ipconfig`（Windows）或 `ifconfig`（Mac/Linux）查看。手机热点下通常是 `192.168.43.x`。
+> IP 用 `ipconfig`（Windows）或 `ifconfig`（Mac/Linux）查看。手机热点下通常是 `192.168.43.x`；ZeroTier 远程模式下用管理面板或 `zerotier-cli listnetworks` 查看分配的 IP（通常是 `10.x.x.x`）。
 
 ### ⚠️ 关于 PLAYWRIGHT_MCP_PING_TIMEOUT_MS
 
