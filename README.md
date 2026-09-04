@@ -65,6 +65,8 @@ AI 搜索商品 → 打开某宝商品页 → 选规格 → 下单 → 截获收
 
 ## 网络拓扑
 
+### 本地模式（同一网络）
+
 推荐手机开热点、电脑连热点，形成私有局域网。所有服务只在这个网络内可见。
 
 ```
@@ -76,6 +78,77 @@ AI 搜索商品 → 打开某宝商品页 → 选规格 → 下单 → 截获收
   │
   └─ 收到 AI 付弹窗 → 按指纹
 ```
+
+### 远程模式（不在同一网络时）
+
+上面的热点方案要求手机和电脑在同一局域网。但现实中你不可能时刻开热点——上课时电脑连校园网，手机连 4G，两台设备不在同一个网络里，AI 就用不了浏览器。
+
+远程模式解决的问题：**不管手机和电脑各自连着什么网络，AI 都能操作电脑上的浏览器。**
+
+**推荐方案：ZeroTier**
+
+[ZeroTier](https://www.zerotier.com/) 是一个开源的 P2P 虚拟组网工具。两台设备各自装上客户端、加入同一个网络，就能通过分配的内网 IP（`10.x.x.x`）直连。数据端到端加密（Curve25519 + Salsa20/12，DJB 设计的密码学原语），不经过任何中间服务器。
+
+```
+手机（4G / 校园WiFi / 任意网络）
+  │
+  ├─ ZeroTier 客户端（10.x.x.x）
+  ├─ AI 客户端（连接 http://<电脑ZT IP>:8931）
+  ├─ 支付宝 App
+  │
+  │     ▲ P2P 端到端加密直连（Curve25519 + Salsa20/12）
+  │     ▼ 协调服务器只做密钥交换，不接触传输内容
+  │
+电脑（校园网 / 家庭WiFi / 任意网络）
+  │
+  ├─ ZeroTier 客户端（10.x.x.x）
+  ├─ Playwright MCP :8931（监听 ZeroTier IP）
+  ├─ 白名单桥接 :8933
+  └─ 浏览器（被 Playwright 控制）
+```
+
+**为什么是 ZeroTier？**
+
+我们实测了几种远程方案，最终选 ZeroTier。原因如下：
+
+| 方案 | 安全性 | 国内可用 | 需要 VPS | 问题 |
+|------|--------|----------|----------|------|
+| **ZeroTier** | ✅ P2P 端到端加密，设备级隔离 | ✅ 协调服务器国内可达 | ❌ | **推荐** |
+| Tailscale | ✅ WireGuard 加密 | ❌ 协调服务器在境外 | ❌ | 国内裸连不稳定，首次握手和每次重连都需要梯子，日常不现实 |
+| SSH 反向隧道 | ⚠️ 端口映射到 VPS 的 `127.0.0.1`，被同机所有进程共享 | ✅ | ✅ | 登录态物理上在你电脑上，但逻辑上暴露给了整台 VPS——VPS 被入侵时，攻击者可通过 MCP 协议直接操控你已登录的浏览器（`browser_evaluate` 执行任意 JS、读 cookie、篡改收银台链接）。`browser_run_code` 风险在隧道场景下被放大 |
+| Headscale（自建控制平面） | ✅ | ✅ 跑在自己服务器上 | ✅ | 安全但吃 VPS 内存，小机器跑不动 |
+| 蒲公英（贝锐） | ⚠️ 商业闭源，无法审计 | ✅ 国产 | ❌ | 免费版限 3 设备，够用但闭源不透明 |
+
+**配置步骤**
+
+1. 注册 [my.zerotier.com](https://my.zerotier.com)（GitHub 登录即可），创建一个 Network。**Access Control 必须设为 Private**（默认就是），新设备加入需手动授权。
+
+2. 电脑装客户端：[zerotier.com/download](https://www.zerotier.com/download/)。安装后系统托盘右键 → Join New Network → 输入 16 位 Network ID。
+
+3. 手机装客户端：Google Play 搜 ZeroTier One。华为等无 Google 框架的设备去 [GitHub Releases](https://github.com/zerotier/ZeroTierOne/releases) 下载 APK 直装。打开 App → Add Network → 输入同一个 Network ID。
+
+4. 回到 [my.zerotier.com](https://my.zerotier.com) → 你的 Network → Members，把两台设备都勾上 **Authorized**。每台设备会分配一个 `10.x.x.x` 的 IP。
+
+5. 验证：电脑上 `ping <手机的 ZeroTier IP>`，0% 丢包就通了。
+
+6. 启动 Playwright MCP 时 `--host` 改成电脑的 ZeroTier IP：
+
+```bash
+# Windows CMD
+set PLAYWRIGHT_MCP_PING_TIMEOUT_MS=1800000 && npx @playwright/mcp@latest --port 8931 --host <电脑的ZeroTier IP> --browser msedge
+
+# Windows PowerShell
+$env:PLAYWRIGHT_MCP_PING_TIMEOUT_MS="1800000"; npx @playwright/mcp@latest --port 8931 --host <电脑的ZeroTier IP> --browser msedge
+```
+
+AI 客户端 MCP 端点改成：`http://<电脑的ZeroTier IP>:8931`
+
+**ZeroTier 安全注意事项**
+
+- **不要公开 Network ID**：虽然 Private 模式需要手动授权，但没必要给别人尝试加入的机会
+- **不要开 Auto-Assign**：保持手动授权新设备
+- **管理面板里只应该有你自己的设备**：定期检查 Members 列表，陌生设备立即移除
+- **协调服务器只做握手**：帮两台设备交换公钥后退出通信链路，不接触后续传输内容
 
 ## 前置条件
 
